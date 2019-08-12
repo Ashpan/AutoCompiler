@@ -12,37 +12,49 @@ from matplotlib import pyplot
 from scipy import ndimage
 import os
 
+def is_empty(image_array,threshold):
+    average = np.mean(image_array)
+    if average > threshold:
+        return False
+    else:
+        return True
+
 def preprossess(file_name):
     #Model trained for images with resolution 784 x 784
     file_name = convert_png(file_name)
     basewidth = 28
     height = 28
     grey_image = Image.open(file_name).convert('L')
+    grey_image = grey_image.filter(ImageFilter.GaussianBlur(5))
     grey_image = ImageEnhance.Color(grey_image).enhance(5)
-    grey_image = ImageEnhance.Contrast(grey_image).enhance(5)
-    grey_image = ImageEnhance.Brightness(grey_image).enhance(5)
-    grey_image = ImageEnhance.Sharpness(grey_image).enhance(5)
-    #grey_image = grey_image.filter(ImageFilter.GaussianBlur(0.1))
+    grey_image = ImageEnhance.Contrast(grey_image).enhance(3)
+    grey_image = ImageEnhance.Brightness(grey_image).enhance(2)
+    grey_image = ImageEnhance.Sharpness(grey_image).enhance(2)
 
     #Change resolution to fit the model size
     grey_image = grey_image.resize((basewidth, height))
     invert_image = PIL.ImageOps.invert(grey_image)
     invert_image = invert_image.resize((basewidth, height))
-    invert_image.save(os.path.basename(file_name)[:-4] + "_processed" + ".png")
+    #invert_image.save(os.path.basename(file_name)[:-4] + "_processed" + ".png")
     return(invert_image)
 
 def number_recognition(file_name):
 
     img = preprossess(file_name)
-    #convert image to numpy array
     data = np.asarray(img)
     data = np.reshape(data, (1, 784))
-    X_data = data / 255.0
-    #print(X_data)
+    empty = is_empty(data,5)
 
-    classifier = load('model.joblib')
-    prediction = classifier.predict(X_data)
-    return(prediction)
+    if not empty:
+        X_data = data / 255.0
+        #print(X_data)
+
+        classifier = load('model.joblib')
+        prediction = classifier.predict(X_data)
+        return(prediction)
+
+    else:
+        return [None]
 
 def test_data(directory):
     images = os.listdir(directory)
@@ -52,12 +64,13 @@ def test_data(directory):
     incorrect = 0
     for i in range(len(images)):
         guess = number_recognition(os.path.join(directory,images[i]))
+
         if guess[0] == images[i][0]:
             correct += 1
             individual_acc[int(images[i][0])] += 1
         else:
             incorrect += 1
-        print("Guess for " + images[i] + ": " + guess)
+        print("Guess for " + images[i] + ": " + str(guess[0]))
 
     accuracy = (correct/size)*100
     for key in individual_acc.keys():
@@ -81,5 +94,6 @@ def convert_png(file_path):
 
 
 if __name__ == '__main__':
-    test_data("/Users/bilalqadar/Documents/fuck_compiling/test_data/pencil_set")
-    #pad_image("a",1,2)
+    test_data("/Users/bilalqadar/Documents/GitHub/FuckCompiling/test_data/pencil_set")
+    #number = number_recognition("/Users/bilalqadar/Documents/GitHub/FuckCompiling/8_7.png")
+    #print(number)
