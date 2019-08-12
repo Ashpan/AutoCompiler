@@ -25,17 +25,17 @@ def preprossess(file_name):
     basewidth = 28
     height = 28
     grey_image = Image.open(file_name).convert('L')
-    grey_image = grey_image.filter(ImageFilter.GaussianBlur(5))
+    grey_image = grey_image.filter(ImageFilter.GaussianBlur(3))
     grey_image = ImageEnhance.Color(grey_image).enhance(5)
-    grey_image = ImageEnhance.Contrast(grey_image).enhance(3)
-    grey_image = ImageEnhance.Brightness(grey_image).enhance(2)
+    grey_image = ImageEnhance.Contrast(grey_image).enhance(1)
+    grey_image = ImageEnhance.Brightness(grey_image).enhance(1)
     grey_image = ImageEnhance.Sharpness(grey_image).enhance(2)
 
     #Change resolution to fit the model size
     grey_image = grey_image.resize((basewidth, height))
     invert_image = PIL.ImageOps.invert(grey_image)
     invert_image = invert_image.resize((basewidth, height))
-    #invert_image.save(os.path.basename(file_name)[:-4] + "_processed" + ".png")
+    invert_image.save(os.path.basename(file_name)[:-4] + "_processed" + ".png")
     return(invert_image)
 
 def number_recognition(file_name):
@@ -92,8 +92,6 @@ def convert_png(file_path):
     else:
         raise TypeError("Image must be a .jpg or .png file")
 
-
-if __name__ == '__main__':
-    test_data("/Users/bilalqadar/Documents/GitHub/FuckCompiling/test_data/pencil_set")
-    #number = number_recognition("/Users/bilalqadar/Documents/GitHub/FuckCompiling/8_7.png")
-    #print(number)
+if __name__ == "__main__":
+    number = number_recognition("/Users/bilalqadar/Documents/GitHub/FuckCompiling/1.png")
+    print(number)
