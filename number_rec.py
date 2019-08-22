@@ -25,17 +25,13 @@ def preprossess(file_name):
     basewidth = 28
     height = 28
     grey_image = Image.open(file_name).convert('L')
-    grey_image = grey_image.filter(ImageFilter.GaussianBlur(2))
-    #grey_image = ImageEnhance.Color(grey_image).enhance(1)
-    grey_image = ImageEnhance.Brightness(grey_image).enhance(1)
-    grey_image = ImageEnhance.Contrast(grey_image).enhance(1)
-    #grey_image = ImageEnhance.Brightness(grey_image).enhance(1)
-    grey_image = ImageEnhance.Sharpness(grey_image).enhance(3)
-
-    #Change resolution to fit the model size
-    grey_image = grey_image.resize((basewidth, height))
     invert_image = PIL.ImageOps.invert(grey_image)
     invert_image = invert_image.resize((basewidth, height))
+    invert_image = invert_image.filter(ImageFilter.GaussianBlur(1.5))
+    invert_image = ImageEnhance.Brightness(invert_image).enhance(1.1)
+    invert_image = ImageEnhance.Contrast(invert_image).enhance(0.9)
+
+    #Change resolution to fit the model size
     invert_image.save(os.path.basename(file_name)[:-4] + "_processed" + ".png")
     return(invert_image)
 
@@ -94,5 +90,5 @@ def convert_png(file_path):
         raise TypeError("Image must be a .jpg or .png file")
 
 if __name__ == "__main__":
-    number = number_recognition("/Users/bilalqadar/Documents/GitHub/FuckCompiling/1.png")
+    number = test_data("/Users/bilalqadar/Documents/GitHub/FuckCompiling/test_data/pencil_set")
     print(number)
