@@ -25,11 +25,12 @@ def preprossess(file_name):
     basewidth = 28
     height = 28
     grey_image = Image.open(file_name).convert('L')
-    grey_image = grey_image.filter(ImageFilter.GaussianBlur(3))
-    grey_image = ImageEnhance.Color(grey_image).enhance(5)
-    grey_image = ImageEnhance.Contrast(grey_image).enhance(1)
+    grey_image = grey_image.filter(ImageFilter.GaussianBlur(2))
+    #grey_image = ImageEnhance.Color(grey_image).enhance(1)
     grey_image = ImageEnhance.Brightness(grey_image).enhance(1)
-    grey_image = ImageEnhance.Sharpness(grey_image).enhance(2)
+    grey_image = ImageEnhance.Contrast(grey_image).enhance(1)
+    #grey_image = ImageEnhance.Brightness(grey_image).enhance(1)
+    grey_image = ImageEnhance.Sharpness(grey_image).enhance(3)
 
     #Change resolution to fit the model size
     grey_image = grey_image.resize((basewidth, height))
