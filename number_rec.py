@@ -1,20 +1,14 @@
 import matplotlib.pyplot as plt
 import numpy as np
-import time
-import datetime as dt
 from joblib import dump,load
-from sklearn import datasets, svm, metrics
 from sklearn.datasets import fetch_openml
-from PIL import Image, ImageEnhance, ImageFilter
-import PIL.ImageOps
 from matplotlib import image
-from matplotlib import pyplot
 from scipy import ndimage
 import cv2
 import os
 import math
 
-def is_empty(image_array,threshold):
+def field_empty(image_array,threshold):
     average = np.mean(image_array)
     if average > threshold:
         return False
@@ -38,7 +32,10 @@ def shift(img,sx,sy):
 
 def preprocess(file_name):
     gray = cv2.imread(file_name, cv2.IMREAD_GRAYSCALE)
-    (thresh, gray) = cv2.threshold(gray, 128, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
+    (thresh, gray) = cv2.threshold(gray, 128, 255, cv2.THRESH_BINARY
+        | cv2.THRESH_OTSU)
+
+    gray = cv2.GaussianBlur(gray,(5,5),0)
     gray = cv2.resize(255-gray,(28,28))
 
     while np.sum(gray[0]) == 0:
@@ -74,15 +71,13 @@ def preprocess(file_name):
 
     shiftx,shifty = getBestShift(gray)
     shifted = shift(gray,shiftx,shifty)
-    gray = shifted
-
     return shifted
 
 def number_recognition(file_name):
 
     data = preprocess(file_name)
     data = np.reshape(data, (1, 784))
-    empty = is_empty(data,10)
+    empty = field_empty(data,5)
 
     if not empty:
         X_data = data / 255.0
