@@ -10,7 +10,9 @@ import PIL.ImageOps
 from matplotlib import image
 from matplotlib import pyplot
 from scipy import ndimage
+import cv2
 import os
+import math
 
 def is_empty(image_array,threshold):
     average = np.mean(image_array)
@@ -19,32 +21,71 @@ def is_empty(image_array,threshold):
     else:
         return True
 
-def preprossess(file_name):
-    #Model trained for images with resolution 784 x 784
-    file_name = convert_png(file_name)
-    basewidth = 28
-    height = 28
-    grey_image = Image.open(file_name).convert('L')
-    invert_image = PIL.ImageOps.invert(grey_image)
-    invert_image = invert_image.resize((basewidth, height))
-    invert_image = invert_image.filter(ImageFilter.GaussianBlur(1.5))
-    invert_image = ImageEnhance.Brightness(invert_image).enhance(1.1)
-    invert_image = ImageEnhance.Contrast(invert_image).enhance(0.9)
+def getBestShift(img):
+    cy,cx = ndimage.measurements.center_of_mass(img)
 
-    #Change resolution to fit the model size
-    invert_image.save(os.path.basename(file_name)[:-4] + "_processed" + ".png")
-    return(invert_image)
+    rows,cols = img.shape
+    shiftx = np.round(cols/2.0-cx).astype(int)
+    shifty = np.round(rows/2.0-cy).astype(int)
+
+    return shiftx,shifty
+
+def shift(img,sx,sy):
+    rows,cols = img.shape
+    M = np.float32([[1,0,sx],[0,1,sy]])
+    shifted = cv2.warpAffine(img,M,(cols,rows))
+    return shifted
+
+def preprocess(file_name):
+    gray = cv2.imread(file_name, cv2.IMREAD_GRAYSCALE)
+    (thresh, gray) = cv2.threshold(gray, 128, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
+    gray = cv2.resize(255-gray,(28,28))
+
+    while np.sum(gray[0]) == 0:
+        gray = gray[1:]
+
+    while np.sum(gray[:,0]) == 0:
+        gray = np.delete(gray,0,1)
+
+    while np.sum(gray[-1]) == 0:
+        gray = gray[:-1]
+
+    while np.sum(gray[:,-1]) == 0:
+        gray = np.delete(gray,-1,1)
+
+    rows,cols = gray.shape
+
+    if rows > cols:
+        factor = 20.0/rows
+        rows = 20
+        cols = int(round(cols*factor))
+		# first cols than rows
+        gray = cv2.resize(gray, (cols,rows))
+    else:
+        factor = 20.0/cols
+        cols = 20
+        rows = int(round(rows*factor))
+        # first cols than rows
+        gray = cv2.resize(gray, (cols, rows))
+
+    colsPadding = (int(math.ceil((28-cols)/2.0)),int(math.floor((28-cols)/2.0)))
+    rowsPadding = (int(math.ceil((28-rows)/2.0)),int(math.floor((28-rows)/2.0)))
+    gray = np.lib.pad(gray,(rowsPadding,colsPadding),'constant')
+
+    shiftx,shifty = getBestShift(gray)
+    shifted = shift(gray,shiftx,shifty)
+    gray = shifted
+
+    return shifted
 
 def number_recognition(file_name):
 
-    img = preprossess(file_name)
-    data = np.asarray(img)
+    data = preprocess(file_name)
     data = np.reshape(data, (1, 784))
-    empty = is_empty(data,5)
+    empty = is_empty(data,10)
 
     if not empty:
         X_data = data / 255.0
-        #print(X_data)
 
         classifier = load('model.joblib')
         prediction = classifier.predict(X_data)
@@ -92,3 +133,4 @@ def convert_png(file_path):
 if __name__ == "__main__":
     number = test_data("/Users/bilalqadar/Documents/GitHub/FuckCompiling/test_data/pencil_set")
     print(number)
+    #pre("/Users/bilalqadar/Documents/GitHub/FuckCompiling/test_data/pencil_set/0_1.png")
