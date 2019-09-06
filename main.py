@@ -6,7 +6,8 @@ def compile_sheet(sheet_name):
     folder = "/Users/bilalqadar/Documents/GitHub/FuckCompiling/Cropped"
     box_extraction(sheet_name,"./Cropped/")
     files = os.listdir(folder)
-
+    correct = 0
+    total = len(files)
     for image in files:
         file_name = os.path.join(folder,image)
         prediction = number_recognition(file_name)
@@ -51,9 +52,9 @@ def compile_sheet(sheet_name):
             print("High Hatches Scored on Rocket during Teleoperated: " + str(prediction))
         elif image == "20.png":
             print("Low Cargo Scored on Rocket during Teleoperated: " + str(prediction))
-
-
         os.remove(file_name)
+
+
 
 
 if __name__ == "__main__":
