@@ -12,25 +12,19 @@ def postCSV(file_name):
 def pushToData(csv_file, event):
     cred = 'https://scouting-test-ffa7d.firebaseio.com'
     database = firebase.FirebaseApplication(cred, None)
+
     try:
         database.get('/'+ event, None)
     except ConnectionError:
-        print('Not Connected to Internet...')
+        print('Check Internet Connection')
     else:
         with open(csv_file, 'r') as csvFile:
             reader = csv.reader(csvFile)
             next(reader)
-            next(reader)
+            labels = next(reader)
 
             writer = csv.writer(csvFile)
             for row in reader:
-
-                labels = ['team_num', 'match_num', 'ar_cargo_scored', 'ar_cargo_missed',
-                'ar_hatch_scored', 'ar_hatch_missed', 'ac_cargo_scored', 'ac_cargo_missed',
-                'tr_hatch_scored', 'tr_hatch_missed', 'tr_cargo_scored', 'tr_cargo_missed',
-                'tc_hatch_scored', 'tc_hatch_missed', 'tc_cargo_scored', 'tc_cargo_missed',
-                'climb1', 'climb2', 'climb3', 'defense_bad', 'defense_meh', 'defense_good',
-                'defense_clamps', 'defense_line', 'defense_cargo', 'defense_ping_pong']
 
                 team_num = str(row[0])
                 print(team_num)
