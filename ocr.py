@@ -9,5 +9,5 @@ def labels(file_name):
     return text
 
 if __name__ == "__main__":
-    label = labels("/Users/bilalqadar/Documents/GitHub/FuckCompiling/Left.png")
+    label = labels("/Users/bilalqadar/Documents/GitHub/FuckCompiling/ocr_test.png")
     print(label)
