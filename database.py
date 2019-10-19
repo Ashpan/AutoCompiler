@@ -3,13 +3,59 @@ from ocr import *
 from number_rec import *
 from boxes import *
 import csv
+import os
 
 
-def postCSV(file_name):
-    #Fix WiFi Error
-    pass
+def postCSV(dir_path,csv_file):
+    files = os.listdir(dir_path)
+    for i in range(len(files)):
+        number_data = {'Team Number':'', 'Match Number':'',
+    'Autonomous Rocket Cargo Scored':'', 'Autonomous Rocket Cargo Missed':'',
+        'Autonomous Rocket Hatch Scored':'', 'Autonomous Rocket Hatch Missed':'',
+        'Autonomous Cargoship Cargo Scored':'', 'Autonomous Cargoship Missed':'',
+        'Teleoperated Rocket Hatches Scored':'','Teleoperated Rocket Hatches Missed':'',
+        'Teleoperated Rocket Cargo Scored':'','Teleoperated Rocket Cargo Missed':'',
+        'Teleoperated Cargoship Hatches Scored':'','Teleoperated Cargoship Hatches Missed':'',
+        'Teleoperated Cargoship Cargo Scored':'','Teleoperated Cargoship Cargo Missed':''}
 
-def pushToData(csv_file, event):
+        check_data = {'Climb 1':'','Climb 2':'','Climb 3':'','Defense Bad':'','Defense Meh':'',
+        'Defense Good':'','Defense Clamps':'','Defense Line':'','Defense Cargo':'',
+        'Defense Ping Pong':''}
+
+        file_name = os.path.basename(files[i])
+        data_label = os.path.splitext(files_name)[0]
+
+        if data_label == None:
+            print('File Name is None')
+
+        if data_label in number_data:
+            value = number_recognition(data_label)
+            number_data[data_label] = value
+        elif data_label in check_data:
+            if field_empty(data_label) is True:
+                value = 'TRUE'
+            else:
+                value = 'FALSE'
+
+            check_data[data_label] = value
+
+        else:
+            print('Data Label not in CSV')
+
+        os.path.remove(file_name)
+        RESULTS = []
+        for key in number_data.keys():
+            RESULTS.append(number_data[key])
+
+        for key in check_data.keys():
+            RESULTS.append(check_data[key])
+
+        with open(csv_file,'a') as file:
+            writer = csv.writer(file)
+            writer.writerow(RESULTS)
+
+
+def pushToDatabase(csv_file, event):
     cred = 'https://scouting-test-ffa7d.firebaseio.com'
     database = firebase.FirebaseApplication(cred, None)
 
@@ -47,5 +93,7 @@ def pushToData(csv_file, event):
 
                     print('Match' + match_num + ' successfully pushed...')
 
+
+
 if __name__ == "__main__":
-    pushToData("/Users/bilalqadar/Documents/GitHub/FuckCompiling/offline_stemely.csv",'stemely')
+    pushToDatabase("/Users/bilalqadar/Documents/GitHub/FuckCompiling/offline_stemely.csv",'stemely')
