@@ -9,5 +9,5 @@ def labels(file_name):
     return text
 
 if __name__ == "__main__":
-    label = labels("/Users/bilalqadar/Documents/GitHub/FuckCompiling/scanned label.png")
-    print(label)
+    label = labels("C:\\Users\\Ashpan\\Drive\\Current\\Programming\\1325Robotics\\Scouting\\Fuck Compiling\\bough\\cropped\\2.png")
+    print(label.split(" ")[0])

@@ -1,61 +1,58 @@
-from number_rec import *
 from boxes import *
 import os
+from deskew import deskew
+from ocr import labels
+import time
+for file in os.listdir(path='./processing/'):
+    os.remove("./processing/"+file)
+deskew("./new_scans/sheet.jpg", "./sheet/fixed_sheet.jpg")
 
-def compile_sheet(sheet_name):
-    folder = "/Users/bilalqadar/Documents/GitHub/FuckCompiling/Cropped"
-    box_extraction(sheet_name,"./Cropped/")
-    files = os.listdir(folder)
-    correct = 0
-    total = len(files)
-    for image in files:
-        file_name = os.path.join(folder,image)
-        prediction = number_recognition(file_name)
+auto_box = box_extraction("./sheet/fixed_sheet.jpg","./cropped/", 2144, 968, 2, True) #AUTO
+delFile(1)
+fileLst = os.listdir(path='./cropped/')
+label1 = (labels("./cropped/"+fileLst[0]).split()[0])
+os.rename("./cropped/"+fileLst[0], "./processing/"+label1+".png")
+auto_sub_box = box_extraction("./processing/"+label1+".png","./cropped/", 920, 810, 1.13, True) #AUTO ROCKET AND CARGO
+os.unlink(path='./processing/Autonomous.png')
+fileLst = os.listdir(path='./cropped/')
+i = 0;
+for file in os.listdir(path='./cropped/'):
+    ocrStr = labels("./cropped/"+file)
+    if("Cargoship" in ocrStr):
+        label2 = label1+"_Cargoship"
+    elif("Rocket" in ocrStr):
+        label2 = label1+"_Rocket"
 
-        if image == "1.png":
-            print("Right Hatches Scored in Autonomous: " + str(prediction))
-        elif image == "2.png":
-            print("Center Hatches Scored in Autonomous: " + str(prediction))
-        elif image == "3.png":
-            print("Left Hatches Scored in Autonomous: " + str(prediction))
-        elif image == "4.png":
-            print("Center Hatches Missed in Autonomous: " + str(prediction))
-        elif image == "5.png":
-            print("Left Hatches Missed in Autonomous: " + str(prediction))
-        elif image == "6.png":
-            print("Right Hatches Missed in Autonomous: " + str(prediction))
-        elif image == "7.png":
-            print("Left Cargo's Scored in Autonomous: " + str(prediction))
-        elif image == "8.png":
-            print("Right Cargo's Scored in Autonomous: " + str(prediction))
-        elif image == "9.png":
-            print("Center Cargo's Scored in Autonomous: " + str(prediction))
-        elif image == "10.png":
-            print("Left Cargo's Missed in Autonomous: " + str(prediction))
-        elif image == "11.png":
-            print("Center Cargo's Missed in Autonomous: " + str(prediction))
-        elif image == "12.png":
-            print("Right Cargo's Missed in Autonomous: " + str(prediction))
-        elif image == "13.png":
-            print("Hatches Scored in Cargo Bay during Teleoperated: " + str(prediction))
-        elif image == "14.png":
-            print("Hatches Missed in Cargo Bay during Teleoperated: " + str(prediction))
-        elif image == "15.png":
-            print("Cargo Missed in Cargo Bay during Teleoperated: " + str(prediction))
-        elif image == "16.png":
-            print("Cargo Scored in Cargo Bay during Teleoperated: " + str(prediction))
-        elif image == "17.png":
-            print("Low Hatches Scored on Rocket during Teleoperated: " + str(prediction))
-        elif image == "18.png":
-            print("Middle Hatches Scored on Rocket during Teleoperated: " + str(prediction))
-        elif image == "19.png":
-            print("High Hatches Scored on Rocket during Teleoperated: " + str(prediction))
-        elif image == "20.png":
-            print("Low Cargo Scored on Rocket during Teleoperated: " + str(prediction))
-        os.remove(file_name)
+    try:
+        os.remove("./processing/"+label2+".png")
+    except:
+        print("didnt delete anything")
+    os.rename("./cropped/"+fileLst[i], "./processing/"+label2+".png")
+    i+=1;
 
+for file in os.listdir(path='./processing/'):
+    label2 = file.split(".")[0]
+    auto_sub_box = box_extraction("./processing/"+file,"./cropped/", 285, 275, 1.04, False) #AUTO ROCKET AND CARGO
+    nameLst = []
+    fileLst = []
+    for sub_file in os.listdir(path='./cropped/'):
+        # print(file)
+        title = labels("./cropped/"+sub_file).split("\n")[0]
+        if(not title in nameLst and not title is ''):
+            nameLst.append(title)
+            fileLst.append(sub_file)
 
-
-
-if __name__ == "__main__":
-    sheet = compile_sheet("sheet.jpg")
+    for sub_file in os.listdir(path='./cropped/'):
+        if(not sub_file in fileLst):
+            os.remove("./cropped/"+sub_file)
+    
+    for sub_file in os.listdir(path='./cropped/'):
+        # print(sub_file)
+        label3 = labels("./cropped/"+sub_file).split("\n")[0]
+        label3 = label2+"_"+label3
+        os.rename("./cropped/"+sub_file, "./processing/"+label3+".png")
+        print(label3+".png")
+    os.remove("./processing/"+label2+".png")
+for sub_file in os.listdir(path='./processing/'):
+    box_extraction("./processing/"+sub_file, "./done/", 113, 113, 1, True)
+    os.rename("./done/1.png", "./done/"+sub_file)

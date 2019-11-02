@@ -1,14 +1,23 @@
+import os
 import cv2
 import numpy as np
 from contours import *
 
-def box_extraction(img_for_box_extraction_path, cropped_dir_path):
+def box_extraction(img_for_box_extraction_path, cropped_dir_path, box_w, box_h, ratio, delBool):
+    if(delBool):
+        for filename in os.listdir(path='./cropped/'):
+            print(filename)
+            if filename.endswith('.png'):
+                # print("Deleting", filename)
+                os.unlink(path='./cropped/'+filename)
+
+    box_arr = []
     img = cv2.imread(img_for_box_extraction_path, 0)  # Read the image
     (thresh, img_bin) = cv2.threshold(img, 128, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)  # Thresholding the image
     img_bin = 255-img_bin  # Invert the image
     #cv2.imwrite("Image_bin.jpg",img_bin)
 
-        # Defining a kernel length
+    # Defining a kernel length
     kernel_length = np.array(img).shape[1]//100
 
     # A verticle kernel of (1 X kernel_length), which will detect all the verticle lines from the image.
@@ -20,11 +29,11 @@ def box_extraction(img_for_box_extraction_path, cropped_dir_path):
     # Morphological operation to detect verticle lines from an image
     img_temp1 = cv2.erode(img_bin, verticle_kernel, iterations=3)
     verticle_lines_img = cv2.dilate(img_temp1, verticle_kernel, iterations=3)
-    #cv2.imwrite("verticle_lines.jpg",verticle_lines_img)
+    # cv2.imwrite("verticle_lines.jpg",verticle_lines_img)
     # Morphological operation to detect horizontal lines from an image
     img_temp2 = cv2.erode(img_bin, hori_kernel, iterations=3)
     horizontal_lines_img = cv2.dilate(img_temp2, hori_kernel, iterations=3)
-    #cv2.imwrite("horizontal_lines.jpg",horizontal_lines_img)
+    # cv2.imwrite("horizontal_lines.jpg",horizontal_lines_img)
     # Weighting parameters, this will decide the quantity of an image to be added to make a new image.
     alpha = 0.5
     beta = 1.0 - alpha
@@ -34,9 +43,10 @@ def box_extraction(img_for_box_extraction_path, cropped_dir_path):
     (thresh, img_final_bin) = cv2.threshold(img_final_bin, 128, 255, cv2.THRESH_BINARY | cv2.THRESH_OTSU)
     # For Debugging
     # Enable this line to see verticle and horizontal lines in the image which is used to find boxes
-    #cv2.imwrite("img_final_bin.jpg",img_final_bin)
+    cv2.imwrite("img_final_bin.jpg",img_final_bin)
     # Find contours for image, which will detect all the boxes
     contours, hierarchy = cv2.findContours(img_final_bin, cv2.RETR_TREE, cv2.CHAIN_APPROX_SIMPLE)
+    # print(hierarchy)
     if len(contours) > 0:
         (contours, boundingBoxes) = sort_contours(contours, method="top-to-bottom")
         idx = 0
@@ -44,9 +54,22 @@ def box_extraction(img_for_box_extraction_path, cropped_dir_path):
         # Returns the location and width,height for every contour
             x, y, w, h = cv2.boundingRect(c)
             # If the box height is greater then 20, widht is >80, then only save it as a box in "cropped/" folder.
-            if (w < 70 and h < 70) and abs(w-h)<7:
+            if (w > box_w/1.15 and w < box_w*1.15 and h > box_h/1.15 and h < box_h*1.15) and (ratio>(w/h)/1.15) and (ratio<(w/h)*1.15):
+            # print("C IS")
+            # print(c)
+                # print([x,y,x+w,y+h])
                 idx += 1
                 new_img = img[y:y+h, x:x+w]
+                box_arr.append(new_img)
                 cv2.imwrite(cropped_dir_path+str(idx) + '.png', new_img)
+        return box_arr
     else:
         print('Sorry No contour Found.')
+
+
+def delFile(index):
+    lst = os.listdir(path='./cropped/')
+    # print(lst)
+    filename = lst[index-1]
+    # print("Deleting", filename)
+    os.unlink(path='./cropped/'+filename)
