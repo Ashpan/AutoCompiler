@@ -3,6 +3,13 @@ import os
 from deskew import deskew
 from ocr import labels
 import time
+
+def empty_dir(directory):
+    for file in os.listdir(path='./'+directory+'/'):
+        os.remove('./'+directory+'/'+file)
+    print("EMPTIED", directory)
+
+
 def runBox():
     for file in os.listdir(path='./processing/'):
         os.remove("./processing/"+file)
@@ -111,12 +118,18 @@ def runBox():
     for sub_file in os.listdir(path='./processing/'):
         box_extraction("./processing/"+sub_file, "./done/", 113, 113, 1, True)
         os.rename("./done/1.png", "./done/"+sub_file)
-
-
-def empty_dir(directory):
-    for file in os.listdir(path='./'+directory+'/'):
-        os.remove('./'+directory+'/'+file)
-    print("EMPTIED", directory)
+    empty_dir('processing')
+    teleop_box = box_extraction("./sheet/fixed_sheet.jpg","./cropped/", 2160, 1558, 1.33, True) #Teleop
+    fileLst = os.listdir(path='./cropped/')
+    label1 = (labels("./cropped/"+fileLst[0]).split()[0])
+    print(label1)
+    os.rename("./cropped/"+fileLst[0], "./processing/"+label1+".png")
+    box_extraction("./processing/"+label1+".png", "./cropped/", 904, 272, 3.3, True)
+    delFile(1)
+    empty_dir('processing')
+    climb = os.listdir(path='./cropped/')[0]
+    label2 = labels('./cropped/'+climb).split()[0]
+    os.rename('./cropped/'+climb, './processing/'+label1+'_'+label2+'.png')
 
 
 runBox()
