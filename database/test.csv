@@ -1,0 +1,6 @@
+team_number,match_number,auto_cargoship_cargo_missed,auto_cargoship_cargo_scored,auto_cargoship_hatch_missed,auto_cargoship_hatch_scored,auto_rocket_cargo_missed,auto_rocket_cargo_scored,auto_rocket_hatch_missed,auto_rocket_hatch_scored,teleop_rocket_cargo_missed,teleop_rocket_cargo_scored,teleop_rocket_hatch_missed,teleop_rocket_hatch_scored,teleop_cargoship_cargo_missed,teleop_cargoship_cargo_scored,teleop_cargoship_hatch_missed,teleop_cargoship_hatch_scored1,climb_1,climb_2,climb_3,cdefense_bad,defense_meh,defense_good,defense_line,defense_cargo,defense_pingpong
+1325,3,7,0,4,58,2,1,14,2,2,0,4,5,4,2,0,9,FALSE,FALSE,FALSE,TRUE,TRUE,FALSE,TRUE,TRUE,TRUE
+325,3,7,0,4,58,2,1,14,2,2,0,4,5,4,2,0,9,FALSE,FALSE,FALSE,TRUE,TRUE,FALSE,TRUE,TRUE,TRUE
+1325,5,7,0,4,58,2,1,14,2,2,0,4,5,4,2,0,9,FALSE,FALSE,FALSE,TRUE,TRUE,FALSE,TRUE,TRUE,TRUE
+325,3,7,0,4,58,2,1,14,2,2,0,4,5,4,2,0,9,FALSE,FALSE,FALSE,TRUE,TRUE,FALSE,TRUE,TRUE,TRUE
+325,3,7,0,4,58,2,1,14,2,2,0,4,5,4,2,0,9,FALSE,FALSE,FALSE,TRUE,TRUE,FALSE,TRUE,TRUE,TRUE
