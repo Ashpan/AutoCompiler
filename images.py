@@ -1,3 +1,4 @@
+###WRITTEN BY: BILAL QADAR & ASHPAN RASKAR###
 import sys
 import os
 import time
@@ -16,6 +17,12 @@ def empty_dir(directory):
     print("EMPTIED", directory)
 
 def runBox(file_name):
+    """runBox is when the data is cropped into a useable form. Sheets are descewed
+    and enhanced in this step. As well all image and file management occurs. This
+    function needs to be modified for any new sheets. Each single number or chec
+    box needs to be cropped and moved to the temporary folders. Strongly recommend
+    using https://www.image-map.net/ to help find coordinates."""
+
     for file in os.listdir(path='./processing/temporary'):
         os.remove("./processing/temporary/"+file)
     for file in os.listdir(path='./processing/completed/'):
@@ -27,11 +34,16 @@ def runBox(file_name):
     sheet = cv2.resize(sheet, (2496,2962))
     cv2.imwrite("./processing/temporary/preprocessed_sheet.jpg", sheet)
     sheet = cv2.imread("./processing/temporary/preprocessed_sheet.jpg")
+
     os.rename("./processing/staged/" + file_name,"./processing/previous_sheets/" + file_name)
+
+    #This is the height and width of the box in which a single number is placed
     h = 65
     w = 38
 
+    #This is the x,y location of the top left corner of the box in which a single number is placed
     x, y = 805, 532
+    #Gap refers to the line width seperating 2 boxes.
     gap = 55
     cv2.imwrite("./processing/completed/team_num1.jpg", sheet[y:y+h, x:x+w])
     cv2.imwrite("./processing/completed/team_num2.jpg", sheet[y:y+h, x+gap:x+gap+w])

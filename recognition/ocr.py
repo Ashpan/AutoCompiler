@@ -1,3 +1,4 @@
+###WRITTEN BY: BILAL QADAR & ASHPAN RASKAR###
 import pytesseract
 import cv2
 

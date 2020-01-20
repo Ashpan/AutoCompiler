@@ -1,3 +1,4 @@
+###WRITTEN BY: ASHPAN RASKAR & BILAL QADAR###
 # import the necessary packages
 import numpy as np
 import argparse
@@ -49,7 +50,7 @@ def deskew(input_file, output_file):
 	# show the output image
 	# print("[INFO] angle: {:.3f}".format(angle))
 	# cv2.imwrite(output_file, rotated)
-	
+
 	# image2 = cv2.imread(output_file)
 	gray = cv2.cvtColor(rotated, cv2.COLOR_BGR2GRAY)
 	black_pixels = np.array(np.where(gray <= 190))

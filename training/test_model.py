@@ -1,3 +1,4 @@
+###WRITTEN BY: BILAL QADAR & ASHPAN RASKAR###
 from number_rec import *
 import os
 
@@ -24,7 +25,7 @@ def test_data(directory):
 
     print("Overall Accuracy: " + str(accuracy))
     print("Test Set Size: " + str(size))
-    
+
 if __name__ == "__main__":
     number = test_data("/Users/bilalqadar/Documents/GitHub/FuckCompiling/test_data/pencil_set")
     print(number)
