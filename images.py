@@ -9,6 +9,7 @@ sys.path.insert(0, '/recognition/')
 from sheet import boxes
 from sheet import straighten
 from recognition import ocr
+import numpy as np
 
 
 def empty_dir(directory):
@@ -16,12 +17,12 @@ def empty_dir(directory):
         os.remove('./'+directory+'/'+file)
     print("EMPTIED", directory)
 
-def runBox(file_name):
-    """runBox is when the data is cropped into a useable form. Sheets are descewed
-    and enhanced in this step. As well all image and file management occurs. This
-    function needs to be modified for any new sheets. Each single number or chec
-    box needs to be cropped and moved to the temporary folders. Strongly recommend
-    using https://www.image-map.net/ to help find coordinates."""
+def get_rect(file_name,box_parameters):
+    """File name is the name of the .jpg file of the entire survey which must be
+    located in the temporary/staged/ folder. Width and height are number of
+    pixels which make up the box which contains each question. Undersize these
+    values. Oversizing these images will result in none crops made. The destination
+    of the cropped files will be in the /processing/completed folder."""
 
     for file in os.listdir(path='./processing/temporary'):
         os.remove("./processing/temporary/"+file)
@@ -31,127 +32,95 @@ def runBox(file_name):
     straighten.deskew("./processing/staged/" + file_name, "./processing/temporary/deskewed_sheet.jpg")
     #os.remove("./processing/staged/" + file_name)
     sheet = cv2.imread("./processing/temporary/deskewed_sheet.jpg")
-    sheet = cv2.resize(sheet, (2496,2962))
+    sheet = cv2.resize(sheet, (2450,2962))
     cv2.imwrite("./processing/temporary/preprocessed_sheet.jpg", sheet)
-    sheet = cv2.imread("./processing/temporary/preprocessed_sheet.jpg")
+    ### UNCOMMENT THIS ###
+    #os.rename("./processing/staged/" + file_name,"./processing/previous_sheets/" + file_name)
+    w1,h1 = box_parameters
+    rects = findCnt("./processing/temporary/preprocessed_sheet.jpg",w1,h1)
 
-    os.rename("./processing/staged/" + file_name,"./processing/previous_sheets/" + file_name)
+    for i in range(len(rects)):
+        cv2.imwrite("./processing/completed/cropped_sheet" + str(i) + ".jpg", rects[i])
+        relabel("./processing/completed/cropped_sheet" + str(i) + ".jpg")
 
-    #This is the height and width of the box in which a single number is placed
-    h = 65
-    w = 38
+def get_data(directory,box_parameters):
+    """Want to add another kind of data type? This is where you do it!"""
+    start_point,w,h,lw = box_parameters
+    start_point = x,y
+    num_data = {}
+    check_data = {}
 
-    #This is the x,y location of the top left corner of the box in which a single number is placed
-    x, y = 805, 532
-    #Gap refers to the line width seperating 2 boxes.
-    gap = 55
-    cv2.imwrite("./processing/completed/team_num1.jpg", sheet[y:y+h, x:x+w])
-    cv2.imwrite("./processing/completed/team_num2.jpg", sheet[y:y+h, x+gap:x+gap+w])
-    cv2.imwrite("./processing/completed/team_num3.jpg", sheet[y:y+h, x+2*gap:x+2*gap+w])
-    cv2.imwrite("./processing/completed/team_num4.jpg", sheet[y:y+h, x+3*gap:x+3*gap+w])
+    for file in os.listdir(directory):
+        num_boxes = file[1]
+        data_type = file[2]
+        name = file[5:len(file)-4]
+        img = cv2.imread(os.path.join(directory,file),cv2.COLOR_BGR2GRAY)
 
-    x, y = 1668, 530
-    gap = 80
-    cv2.imwrite("./processing/completed/match1.jpg", sheet[y:y+h, x:x+w])
-    cv2.imwrite("./processing/completed/match2.jpg", sheet[y:y+h, x+gap:x+gap+w])
-    cv2.imwrite("./processing/completed/match3.jpg", sheet[y:y+h, x+2*gap:x+2*gap+w])
+        for i in range(len(num_boxes)):
+            crop = img[x-((i*w)+((i-1)*lw)):x,y:y+h]
+            temp = []
+            if not recognition.field_empty(crop):
+                if data_type == "N":
+                    img = cv2.imread(os.path.join(directory,file),cv2.IMREAD_GRAYSCALE)
+                    crop = img[x-((i*w)+((i-1)*lw)):x,y:y+h]
+                    value = recognition.number_rec(crop)
+                    temp.append(value)
 
-    x, y = 540, 1030
-    gap = 55
-    cv2.imwrite("./processing/completed/auto_rocket_cargo_scored1.jpg", sheet[y:y+h, x:x+w])
-    cv2.imwrite("./processing/completed/auto_rocket_cargo_scored2.jpg", sheet[y:y+h, x+gap:x+gap+w])
+                elif data_type == "T":
+                    check_data[name] = str(True)
+                else:
+                    check_data[name] = str(False)
 
-    x, y = 930, 1030
-    cv2.imwrite("./processing/completed/auto_rocket_cargo_missed1.jpg", sheet[y:y+h, x:x+w])
-    cv2.imwrite("./processing/completed/auto_rocket_cargo_missed2.jpg", sheet[y:y+h, x+gap:x+gap+w])
+            final_val = ""
+            #The contents of temp are in reverse order so we need to flip it
+            for i in range(len(temp)):
+                final_val _+= temp[len(temp)- 1- i]
 
-    x, y = 538, 1320
-    gap = 55
-    cv2.imwrite("./processing/completed/auto_rocket_hatch_scored1.jpg", sheet[y:y+h, x:x+w])
-    cv2.imwrite("./processing/completed/auto_rocket_hatch_scored2.jpg", sheet[y:y+h, x+gap:x+gap+w])
+            number_data[name] = final_val
 
-    x, y = 930, 1315
-    cv2.imwrite("./processing/completed/auto_rocket_hatch_missed1.jpg", sheet[y:y+h, x:x+w])
-    cv2.imwrite("./processing/completed/auto_rocket_hatch_missed2.jpg", sheet[y:y+h, x+gap:x+gap+w])
-# ------
-    x, y = 1545, 1030
-    cv2.imwrite("./processing/completed/auto_cargoship_cargo_scored1.jpg", sheet[y:y+h, x:x+w])
-    cv2.imwrite("./processing/completed/auto_cargoship_cargo_scored2.jpg", sheet[y:y+h, x+gap:x+gap+w])
 
-    x, y = 1935, 1030
-    cv2.imwrite("./processing/completed/auto_cargoship_cargo_missed1.jpg", sheet[y:y+h, x:x+w])
-    cv2.imwrite("./processing/completed/auto_cargoship_cargo_missed2.jpg", sheet[y:y+h, x+gap:x+gap+w])
 
-    x, y = 1543, 1320
-    cv2.imwrite("./processing/completed/auto_cargoship_hatch_scored1.jpg", sheet[y:y+h, x:x+w])
-    cv2.imwrite("./processing/completed/auto_cargoship_hatch_scored2.jpg", sheet[y:y+h, x+gap:x+gap+w])
 
-    x, y = 1935, 1320
-    cv2.imwrite("./processing/completed/auto_cargoship_hatch_missed1.jpg", sheet[y:y+h, x:x+w])
-    cv2.imwrite("./processing/completed/auto_cargoship_hatch_missed2.jpg", sheet[y:y+h, x+gap:x+gap+w])
-    # -----------------
-    x, y = 540, 1960
-    cv2.imwrite("./processing/completed/teleop_rocket_cargo_scored1.jpg", sheet[y:y+h, x:x+w])
-    cv2.imwrite("./processing/completed/teleop_rocket_cargo_scored2.jpg", sheet[y:y+h, x+gap:x+gap+w])
+    print(num_data)
+    print(check_data)
 
-    x, y = 930, 1960
-    cv2.imwrite("./processing/completed/teleop_rocket_cargo_missed1.jpg", sheet[y:y+h, x:x+w])
-    cv2.imwrite("./processing/completed/teleop_rocket_cargo_missed2.jpg", sheet[y:y+h, x+gap:x+gap+w])
+def relabel(image):
+    dir = os.path.dirname(image)
+    label = ocr.labels(image)
+    q_index = label.find("?")
+    label = label[0:q_index]
+    label = label.lstrip()
+    label = label.rstrip()
+    label = label.replace(" ", "_")
+    os.rename(image,os.path.join(dir,label + ".jpg"))
 
-    x, y = 540, 2250
-    cv2.imwrite("./processing/completed/teleop_rocket_hatch_scored1.jpg", sheet[y:y+h, x:x+w])
-    cv2.imwrite("./processing/completed/teleop_rocket_hatch_scored2.jpg", sheet[y:y+h, x+gap:x+gap+w])
+def findCnt(image_name,width,height,fill=100):
+    img = cv2.imread(image_name,0)
+    h, w = img.shape[:2]
+    kernel = np.ones((15,15),np.uint8)
 
-    x, y = 935, 2250
-    cv2.imwrite("./processing/completed/teleop_rocket_hatch_missed1.jpg", sheet[y:y+h, x:x+w])
-    cv2.imwrite("./processing/completed/teleop_rocket_hatch_missed2.jpg", sheet[y:y+h, x+gap:x+gap+w])
-# ------
-    x, y = 1545, 1960
-    cv2.imwrite("./processing/completed/teleop_cargoship_cargo_scored1.jpg", sheet[y:y+h, x:x+w])
-    cv2.imwrite("./processing/completed/teleop_cargoship_cargo_scored2.jpg", sheet[y:y+h, x+gap:x+gap+w])
+    e = cv2.erode(img,kernel,iterations = 2)
+    d = cv2.dilate(e,kernel,iterations = 1)
+    ret, th = cv2.threshold(d, 150, 255, cv2.THRESH_BINARY_INV)
 
-    x, y = 1935, 1960
-    cv2.imwrite("./processing/completed/teleop_cargoship_cargo_missed1.jpg", sheet[y:y+h, x:x+w])
-    cv2.imwrite("./processing/completed/teleop_cargoship_cargo_missed2.jpg", sheet[y:y+h, x+gap:x+gap+w])
+    mask = np.zeros((h+2, w+2), np.uint8)
+    cv2.floodFill(th, mask, (fill,fill), 255); # position = (200,200)
+    out = cv2.bitwise_not(th)
+    out= cv2.dilate(out,kernel,iterations = 3)
 
-    x, y = 1540, 2250
-    cv2.imwrite("./processing/completed/teleop_cargoship_hatch_scored1.jpg", sheet[y:y+h, x:x+w])
-    cv2.imwrite("./processing/completed/teleop_cargoship_hatch_scored2.jpg", sheet[y:y+h, x+gap:x+gap+w])
+    cnt, h = cv2.findContours(out,cv2.RETR_TREE,cv2.CHAIN_APPROX_SIMPLE)
+    rects = []
+    for i in range(len(cnt)):
+        area = cv2.contourArea(cnt[i])
 
-    x, y = 1935, 2250
-    cv2.imwrite("./processing/completed/teleop_cargoship_hatch_missed1.jpg", sheet[y:y+h, x:x+w])
-    cv2.imwrite("./processing/completed/teleop_cargoship_hatch_missed2.jpg", sheet[y:y+h, x+gap:x+gap+w])
-# ------
-    x1, y1 = 395, 2521
-    x2, y2 = 580, 2610
-    cv2.imwrite("./processing/completed/climb_1.jpg", sheet[y1:y2, x1:x2])
-    x1, y1 = 600, 2520
-    x2, y2 = 818, 2600
-    cv2.imwrite("./processing/completed/climb_2.jpg", sheet[y1:y2, x1:x2])
-    x1, y1 = 830, 2520
-    x2, y2 = 1020, 2610
-    cv2.imwrite("./processing/completed/climb_3.jpg", sheet[y1:y2, x1:x2])
-# ------
-    x1, y1 = 1400, 2540
-    x2, y2 = 1530, 2640
-    cv2.imwrite("./processing/completed/defense_bad.jpg", sheet[y1:y2, x1:x2])
-    x1, y1 = 1540, 2540
-    x2, y2 = 1690, 2640
-    cv2.imwrite("./processing/completed/defense_meh.jpg", sheet[y1:y2, x1:x2])
-    x1, y1 = 1710, 2540
-    x2, y2 = 1870, 2640
-    cv2.imwrite("./processing/completed/defense_good.jpg", sheet[y1:y2, x1:x2])
-# ------
-    x1, y1 = 1400, 2745
-    x2, y2 = 1530, 2845
-    cv2.imwrite("./processing/completed/defense_line.jpg", sheet[y1:y2, x1:x2])
-    x1, y1 = 1545, 2750
-    x2, y2 = 1690, 2850
-    cv2.imwrite("./processing/completed/defense_cargo.jpg", sheet[y1:y2, x1:x2])
-    x1, y1 = 1710, 2750
-    x2, y2 = 1865, 2845
-    cv2.imwrite("./processing/completed/defense_pingpong.jpg", sheet[y1:y2, x1:x2])
-# ------
-    x1, y1 = 390, 2710
-    x2, y2 = 1020, 2885
-    cv2.imwrite("./processing/completed/comments.jpg", sheet[y1:y2, x1:x2])
+        if (area > 1.5*(width*height) and area < 5*width*height):
+            mask = np.zeros_like(img)
+            cv2.drawContours(mask, cnt, i, 255, -1)
+            x,y,w,h = cv2.boundingRect(cnt[i])
+            rects.append(img[y:h+y,x:w+x])
+
+    return rects
+
+if __name__ == "__main__":
+    get_rect("affordability.png",(1300,130))
+    get_data("./processing/completed/")

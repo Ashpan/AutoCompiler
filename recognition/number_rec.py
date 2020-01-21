@@ -47,8 +47,8 @@ def shift(img,sx,sy):
     shifted = cv2.warpAffine(img,M,(cols,rows))
     return shifted
 
-def preprocess(file_name):
-    gray = cv2.imread(file_name, cv2.IMREAD_GRAYSCALE)
+def preprocess(image_array):
+    gray = image_array
     (thresh, gray) = cv2.threshold(gray, 128, 255, cv2.THRESH_BINARY
         | cv2.THRESH_OTSU)
 
@@ -90,9 +90,9 @@ def preprocess(file_name):
     shifted = shift(gray,shiftx,shifty)
     return shifted
 
-def number_recognition(file_name):
-    empty = field_empty(file_name,3000)
-    data = preprocess(file_name)
+def number_recognition(image_array):
+    empty = field_empty(image_array,3000)
+    data = preprocess(image_array)
     data = np.reshape(data, (1, 784))
     if not empty:
         X_data = data / 255.0
