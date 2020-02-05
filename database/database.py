@@ -11,7 +11,7 @@ sys.path.insert(0,name + "/recognition/")
 
 def postCSV(data, csv_file):
     print("Saving offline backup of data...")
-    RESULTS = []
+
     number_data,check_data = data
     RESULTS = []
 
