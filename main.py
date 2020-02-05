@@ -8,12 +8,12 @@ from images import *
 from recognition import number_rec
 from database import database
 
-
+CSV_location = '.database/file.csv'
+database_cred = 'my firebase credentials'
+id = 0
 for file in os.listdir(path='./processing/staged'):
-
-    runBox(file)
-    directory = path='./processing/completed/'
-    ###CHANGE TEST.CSV TO WHATEVER CSV IS BEING USED###
-    database.postCSV(directory,'./database/test.csv')
-    ###CHANGE TEST.CSV TO WHATEVER CSV IS BEING USED AND TEST_EVENT TO THE DATABASE EVENT KEY###
-    database.pushToDatabase('./database/test.csv','test_event')
+    get_rect(file,(1300,130))
+    data = get_data("./processing/completed/",((2100,20),250,200,10))
+    database.postCSV(data,CSV_location)
+    database.pushToDatabase('test_event',str(id),CSV_location,creds)
+    id += 1

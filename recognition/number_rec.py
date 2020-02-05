@@ -16,13 +16,14 @@ def field_empty(image,threshold):
     or not. The threshold parameter is the amount of noise an image can have
     and this function still concludes it is empty"""
 
-    image_array = cv2.imread(image, cv2.COLOR_BGR2GRAY)
-    image_array = cv2.resize(image_array,(200,200))
+    image_array = cv2.resize(image,(200,200))
     white = 0
     black = 0
     for row in image_array:
+        #print(row)
         for pixel in row:
-            if pixel[2] < 250:
+            #print(pixel[2])
+            if pixel < 250:
                 black += 1
             else:
                 white += 1

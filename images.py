@@ -9,6 +9,7 @@ sys.path.insert(0, '/recognition/')
 from sheet import boxes
 from sheet import straighten
 from recognition import ocr
+from recognition import number_rec
 import numpy as np
 
 
@@ -30,12 +31,12 @@ def get_rect(file_name,box_parameters):
         os.remove("./processing/completed/"+file)
 
     straighten.deskew("./processing/staged/" + file_name, "./processing/temporary/deskewed_sheet.jpg")
-    #os.remove("./processing/staged/" + file_name)
+    os.remove("./processing/staged/" + file_name)
     sheet = cv2.imread("./processing/temporary/deskewed_sheet.jpg")
     sheet = cv2.resize(sheet, (2450,2962))
     cv2.imwrite("./processing/temporary/preprocessed_sheet.jpg", sheet)
-    ### UNCOMMENT THIS ###
-    #os.rename("./processing/staged/" + file_name,"./processing/previous_sheets/" + file_name)
+
+    os.rename("./processing/staged/" + file_name,"./processing/previous_sheets/" + file_name)
     w1,h1 = box_parameters
     rects = findCnt("./processing/temporary/preprocessed_sheet.jpg",w1,h1)
 
@@ -46,7 +47,7 @@ def get_rect(file_name,box_parameters):
 def get_data(directory,box_parameters):
     """Want to add another kind of data type? This is where you do it!"""
     start_point,w,h,lw = box_parameters
-    start_point = x,y
+    x,y = start_point
     num_data = {}
     check_data = {}
 
@@ -57,32 +58,30 @@ def get_data(directory,box_parameters):
         img = cv2.imread(os.path.join(directory,file),cv2.COLOR_BGR2GRAY)
 
         for i in range(len(num_boxes)):
-            crop = img[x-((i*w)+((i-1)*lw)):x,y:y+h]
+            crop = img[y:y+h,x-((i+1)*w)-(i*lw): x-(i*w)-(i*lw)]
             temp = []
-            if not recognition.field_empty(crop):
-                if data_type == "N":
-                    img = cv2.imread(os.path.join(directory,file),cv2.IMREAD_GRAYSCALE)
-                    crop = img[x-((i*w)+((i-1)*lw)):x,y:y+h]
-                    value = recognition.number_rec(crop)
-                    temp.append(value)
 
-                elif data_type == "T":
-                    check_data[name] = str(True)
-                else:
+            if data_type == "N":
+                img = cv2.imread(os.path.join(directory,file),cv2.IMREAD_GRAYSCALE)
+                crop = img[y:y+h,x-((i+1)*w)-(i*lw): x-(i*w)-(i*lw)]
+
+                value = number_rec.number_recognition(crop)
+                temp.append(value)
+
+            elif data_type == "T":
+                value = number_rec.field_empty(crop,3000)
+                if value == True:
                     check_data[name] = str(False)
+                else:
+                    check_data[name] = str(True)
 
             final_val = ""
             #The contents of temp are in reverse order so we need to flip it
             for i in range(len(temp)):
-                final_val _+= temp[len(temp)- 1- i]
+                final_val += temp[len(temp)- 1- i]
 
-            number_data[name] = final_val
-
-
-
-
-    print(num_data)
-    print(check_data)
+            num_data[name] = final_val
+    return (num_data,check_data)
 
 def relabel(image):
     dir = os.path.dirname(image)
@@ -120,7 +119,3 @@ def findCnt(image_name,width,height,fill=100):
             rects.append(img[y:h+y,x:w+x])
 
     return rects
-
-if __name__ == "__main__":
-    get_rect("affordability.png",(1300,130))
-    get_data("./processing/completed/")
