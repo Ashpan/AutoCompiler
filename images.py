@@ -27,7 +27,6 @@ def runBox(file_name):
         os.remove("./processing/temporary/"+file)
     for file in os.listdir(path='./processing/completed/'):
         os.remove("./processing/completed/"+file)
-
     straighten.deskew("./processing/staged/" + file_name, "./processing/temporary/deskewed_sheet.jpg")
     #os.remove("./processing/staged/" + file_name)
     sheet = cv2.imread("./processing/temporary/deskewed_sheet.jpg")
