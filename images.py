@@ -1,4 +1,4 @@
-###WRITTEN BY: BILAL QADAR & ASHPAN RASKAR###
+### WRITTEN BY: BILAL QADAR & ASHPAN RASKAR ###
 import sys
 import os
 import time
@@ -27,7 +27,10 @@ def runBox(file_name):
         os.remove("./processing/temporary/"+file)
     for file in os.listdir(path='./processing/completed/'):
         os.remove("./processing/completed/"+file)
+
     straighten.deskew("./processing/staged/" + file_name, "./processing/temporary/deskewed_sheet.jpg")
+    straighten.remove_border("./processing/temporary/deskewed_sheet.jpg","./processing/temporary/removed_" + file_name)
+    straighten.deskew("./processing/temporary/removed_" + file_name, "./processing/temporary/deskewed_sheet.jpg")
     #os.remove("./processing/staged/" + file_name)
     sheet = cv2.imread("./processing/temporary/deskewed_sheet.jpg")
     sheet = cv2.resize(sheet, (2496,2962))
