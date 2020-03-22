@@ -9,7 +9,8 @@ from recognition import number_rec
 from database import database
 
 for file in os.listdir(os.path.join('processing', 'staged')):
-	runBox(file)
+	labels = runBox(file)
+	print(labels)
 	directory = path='./processing/completed/'
     ###CHANGE TEST.CSV TO WHATEVER CSV IS BEING USED###
 	# database.postCSV(directory,'./database/test.csv')

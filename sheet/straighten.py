@@ -31,11 +31,10 @@ def reorient(image_name, dest_name):
 		if(past_white and past_black):
 			second_angle = i
 			break
-	print(first_angle, second_angle)
 	opposite = abs(first_angle - second_angle)
 	adjacent = abs(first_point - second_point)
 	theta = degrees(atan(opposite/adjacent))
-	print(theta)
+	print("Angle:", theta)
 	imag = Image.open(image_name)
 	if(first_angle<second_angle):
 		imag = imag.rotate(-theta, resample=0, expand=0, center=None, translate=None, fillcolor=None)
