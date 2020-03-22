@@ -1,8 +1,47 @@
 ###WRITTEN BY: ASHPAN RASKAR & BILAL QADAR###
 # import the necessary packages
 import numpy as np
+from math import *
 import argparse
 import cv2
+from PIL import Image
+
+def reorient(image_name, dest_name):
+	img = cv2.imread(image_name, cv2.IMREAD_GRAYSCALE)
+	first_point = int(img.shape[0]*0.3)
+	second_point = int(img.shape[0]*0.6)
+	past_white = not(img[first_point][0] > 150)
+	past_black = False
+	for i in range(len(img[first_point])):
+		if(img[first_point][i] < 100):
+			past_white = True
+		elif(img[first_point][i] > 190):
+			past_black = True
+		if(past_white and past_black):
+			first_angle = i
+			break
+	past_white = not(img[second_point][0] > 150)
+	past_black = False
+	for i in range(len(img[second_point])):
+		if(img[second_point][i] < 100):
+			past_white = True
+			past_black = False
+		elif(img[second_point][i] > 190):
+			past_black = True
+		if(past_white and past_black):
+			second_angle = i
+			break
+	print(first_angle, second_angle)
+	opposite = abs(first_angle - second_angle)
+	adjacent = abs(first_point - second_point)
+	theta = degrees(atan(opposite/adjacent))
+	print(theta)
+	imag = Image.open(image_name)
+	if(first_angle<second_angle):
+		imag = imag.rotate(-theta, resample=0, expand=0, center=None, translate=None, fillcolor=None)
+	else:
+		imag = imag.rotate(theta, resample=0, expand=0, center=None, translate=None, fillcolor=None)
+	imag.save(dest_name)
 
 def remove_border(image_name, dest_name):
 	img = cv2.imread(image_name)
